@@ -98,6 +98,85 @@
         function calcular() {
             // Lógica para calcular os 3 cenários e a escada de comissão progressiva
         }
-    </script>
-</body>
-</html>
+    <script>
+    // Configurações do seu Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyBDoUdfJeWgaKO8A0KqFzIQpRh2y7jn44Y",
+        authDomain: "sistema-orcamento-101.firebaseapp.com",
+        projectId: "sistema-orcamento-101",
+        storageBucket: "sistema-orcamento-101.firebasestorage.app",
+        messagingSenderId: "143981176901",
+        appId: "1:143981176901:web:77086f928f4e1c0f855b2c"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    function calcular() {
+        // Captura de valores
+        const custoForn = parseFloat(document.getElementById('custo_forn').value) || 0;
+        const valSist = parseFloat(document.getElementById('val_sist').value) || 0;
+        const margemDesejada = parseFloat(document.getElementById('margem').value) || 0;
+        const taxaLink = parseFloat(document.getElementById('parc_link').value) || 0;
+
+        // 1. Cálculo do Preço de Venda Líquido (Sem Juros)
+        const precoVendaBase = custoForn / (1 - (margemDesejada / 100));
+        const lucroAgencia = precoVendaBase - custoForn;
+
+        // 2. Cálculo da Venda Quebrada (V.Q.) com Juros
+        // O valor que vai para o link deve cobrir o lucro e os juros da operadora
+        const valorRestante = precoVendaBase - valSist;
+        const valorNoLinkComJuros = valorRestante / (1 - taxaLink);
+        const totalVendaVQ = valSist + valorNoLinkComJuros;
+
+        // 3. Lógica da Escada de Bônus (Comissão Progressiva)
+        let pctComissao = 0.5; // Base fixa
+        if (margemDesejada >= 18) {
+            pctComissao = 1.0; // Bônus nível 1
+            const pontosExtras = Math.floor(margemDesejada - 18);
+            pctComissao += (pontosExtras * 0.1); // +0,1% por cada 1% de margem extra
+        }
+
+        // Atualização da UI
+        document.getElementById('resumo_vq').innerText = totalVendaVQ.toLocaleString('pt-br', {style: 'currency', currency: 'BRL'});
+        document.getElementById('pct_comissao').innerText = pctComissao.toFixed(1) + "%";
+
+        // Feedback Visual da Meta
+        const statusBox = document.getElementById('status_comissao');
+        if (margemDesejada >= 18) {
+            statusBox.className = "bg-green-600 px-6 py-2 rounded-2xl border border-green-500 text-center animate-pulse";
+        } else {
+            statusBox.className = "bg-slate-800 px-6 py-2 rounded-2xl border border-slate-700 text-center";
+        }
+    }
+
+    function salvarVenda() {
+        const dados = {
+            vendedor: document.getElementById('vendedor').value || "MIGUEL",
+            cliente: document.getElementById('cliente').value,
+            cpf: document.getElementById('cpf').value,
+            destino: document.getElementById('destino').value,
+            custo: document.getElementById('custo_forn').value,
+            margem: document.getElementById('margem').value,
+            data: new Date().toISOString(),
+            obs: document.getElementById('obs').value
+        };
+
+        if(!dados.cliente || !dados.custo) {
+            alert("Por favor, preencha o Nome do Cliente e o Custo!");
+            return;
+        }
+
+        db.collection("vendas").add(dados).then(() => {
+            alert("✅ Venda salva com sucesso! O texto para o WhatsApp já pode ser gerado.");
+            gerarTextoWhatsApp(dados);
+        });
+    }
+
+    function gerarTextoWhatsApp(d) {
+        const msg = `Olá ${d.cliente}! Segue orçamento para ${d.destino}:%0A%0AValor Total: ${document.getElementById('resumo_vq').innerText}%0AParcelamento em até 12x no cartão.`;
+        window.open(`https://wa.me/?text=${msg}`, '_blank');
+    }
+
+    // Inicializa o cálculo
+    calcular();
+</script>
