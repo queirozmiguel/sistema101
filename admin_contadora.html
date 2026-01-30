@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Admin - Gestão 101</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 p-6">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-3xl font-black text-slate-900">PAINEL DE GESTÃO</h1>
+                <p class="text-slate-500 font-medium">Relatório de Vendas e Comissões Progressivas</p>
+            </div>
+            <div class="flex gap-4">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Lucro Total Acumulado</p>
+                    <p id="total_lucro" class="text-2xl font-black text-green-600">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-900 text-white text-[11px] uppercase tracking-widest">
+                        <th class="p-5">Data / Produto</th>
+                        <th class="p-5">Custo Neto</th>
+                        <th class="p-5">Margem (%)</th>
+                        <th class="p-5">Lucro Bruto</th>
+                        <th class="p-5">Comissão Vendedor</th>
+                        <th class="p-5">Observações / Anexos</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela_vendas" class="text-sm text-slate-700 font-medium">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Configurações
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDoUdfJeWgaKO8A0KqFzIQpRh2y7jn44Y",
+            authDomain: "sistema-orcamento-101.firebaseapp.com",
+            projectId: "sistema-orcamento-101",
+            storageBucket: "sistema-orcamento-101.firebasestorage.app",
+            messagingSenderId: "143981176901",
+            appId: "1:143981176901:web:77086f928f4e1c0f855b2c"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function carregarVendas() {
+            db.collection("vendas").orderBy("data", "desc").onSnapshot((snapshot) => {
+                const tabela = document.getElementById('tabela_vendas');
+                let totalAcumulado = 0;
+                tabela.innerHTML = "";
+
+                snapshot.forEach((doc) => {
+                    const v = doc.data();
+                    const margem = parseFloat(v.margem);
+                    const custo = parseFloat(v.custo);
+                    
+                    // Lógica de V.Q. e Lucro
+                    const valorTotalVista = custo / (1 - (margem/100));
+                    const lucroBruto = valorTotalVista - custo;
+                    totalAcumulado += lucroBruto;
+
+                    // Lógica da Escada de Bônus
+                    let pctCom = 0.5;
+                    if (margem >= 18) {
+                        pctCom = 1.0 + (Math.floor(margem - 18) * 0.1);
+                    }
+                    const valorComissao = lucroBruto * (pctCom / 100);
+
+                    tabela.innerHTML += `
+                        <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                            <td class="p-5">
+                                <p class="font-black text-slate-900">${new Date(v.data).toLocaleDateString()}</p>
+                                <p class="text-[10px] text-slate-400 uppercase">${v.produto}</p>
+                            </td>
+                            <td class="p-5">R$ ${custo.toLocaleString('pt-br')}</td>
+                            <td class="p-5">
+                                <span class="${margem >= 18 ? 'text-green-600 font-black' : 'text-slate-900'}">
+                                    ${margem}% ${margem >= 18 ? '🔥' : ''}
+                                </span>
+                            </td>
+                            <td class="p-5 font-bold text-slate-900">R$ ${lucroBruto.toLocaleString('pt-br')}</td>
+                            <td class="p-5">
+                                <p class="font-bold text-blue-600">R$ ${valorComissao.toLocaleString('pt-br')}</p>
+                                <p class="text-[9px] uppercase font-black text-slate-400">Taxa: ${pctCom.toFixed(1)}%</p>
+                            </td>
+                            <td class="p-5 italic text-slate-400 text-xs">${v.obs || 'Sem anexos'}</td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('total_lucro').innerText = totalAcumulado.toLocaleString('pt-br', {style: 'currency', currency: 'BRL'});
+            });
+        }
+        carregarVendas();
+    </script>
+</body>
+</html>
