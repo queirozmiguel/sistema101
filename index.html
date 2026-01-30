@@ -2,185 +2,102 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Sistema 101 - Simulador de 3 Cenários</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema 101 - Gestão de Agência</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100 p-4">
-    <div class="max-w-6xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden border border-slate-200">
-        <div class="bg-slate-900 text-white p-6 flex justify-between items-center">
+<body class="bg-slate-100 font-sans antialiased pb-10">
+
+    <header class="bg-slate-900 text-white p-6 shadow-lg mb-6">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-black">SISTEMA 101</h1>
+                <h1 class="text-2xl font-black tracking-tighter">SISTEMA 101</h1>
                 <p class="text-[10px] text-slate-400 uppercase tracking-widest">Multi-Cenários & Comissões Progressivas</p>
             </div>
-            <div class="text-right bg-slate-800 p-3 rounded-xl border border-slate-700">
-                <p class="text-[9px] font-bold text-blue-400 uppercase">Câmbio + R$ 0,10</p>
-                <p class="text-xl font-mono font-bold">EUR R$ 6,35</p>
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-3 text-right">
+                <span class="text-[10px] block text-blue-400 font-bold uppercase">Câmbio + R$ 0,10</span>
+                <span class="text-xl font-mono font-bold text-white">EUR R$ 6,35</span>
             </div>
         </div>
+    </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3">
-            <div class="lg:col-span-1 p-8 border-r border-slate-100 bg-slate-50/50">
-                <h2 class="text-sm font-black text-slate-800 mb-6 uppercase border-b pb-2">Dados da Cotação</h2>
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tipo de Serviço</label>
-                        <select id="produto" onchange="aplicarRegra()" class="w-full border-2 border-slate-200 p-3 rounded-xl font-bold outline-none focus:border-blue-500">
-                            <option value="pacote">Pacote Planilha (16%)</option>
-                            <option value="expedia">Hospedagem Expedia (13%)</option>
-                            <option value="seguro">Seguro Viagem (40%)</option>
-                            <option value="cruzeiro">Cruzeiro (15%)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Margem de Lucro (%)</label>
-                        <input type="number" id="lucro_input" oninput="calcularTudo()" class="w-full border-2 border-slate-200 p-3 rounded-xl font-bold outline-none">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-[10px] font-bold text-red-500 uppercase mb-1">Custo Total</label>
-                            <input type="number" id="custo" value="5000" oninput="calcularTudo()" class="w-full border-2 border-red-100 p-3 rounded-xl font-bold text-red-600 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-blue-500 uppercase mb-1">No Sistema</label>
-                            <input type="number" id="v_sistema" value="3500" oninput="calcularTudo()" class="w-full border-2 border-blue-100 p-3 rounded-xl font-bold text-blue-600 outline-none">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Observações (Print do Voo/Hotel)</label>
-                        <textarea id="obs" placeholder="Cole o link do print ou detalhes aqui..." class="w-full border-2 border-slate-200 p-3 rounded-xl text-sm h-20 outline-none"></textarea>
-                    </div>
+    <main class="max-w-5xl mx-auto px-4 space-y-6">
+
+        <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+            <h2 class="text-blue-600 font-bold flex items-center gap-2 mb-4">
+                <span class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
+                Dados da Viagem
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <input type="text" id="vendedor" placeholder="Vendedor: MIGUEL" class="p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 ring-blue-500">
+                <input type="text" id="cliente" placeholder="Nome do Passageiro" class="p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 ring-blue-500">
+                <input type="text" id="cpf" placeholder="CPF do Cliente" class="p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 ring-blue-500">
+                <input type="text" id="destino" placeholder="Destino (ex: Madrid)" class="p-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 ring-blue-500">
+            </div>
+        </section>
+
+        <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+            <h2 class="text-blue-600 font-bold flex items-center gap-2 mb-4">
+                <span class="bg-blue-100 text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
+                Composição de Custos & Margem
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Custo Fornecedor (R$)</label>
+                    <input type="number" id="custo_forn" oninput="calcular()" placeholder="Ex: 3000" class="w-full p-3 border-2 border-red-50 rounded-xl font-bold text-red-600">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Valor Sistema (Direto)</label>
+                    <input type="number" id="val_sist" oninput="calcular()" placeholder="Ex: 1000" class="w-full p-3 border-2 border-blue-50 rounded-xl font-bold text-blue-600">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Margem Desejada (%)</label>
+                    <input type="number" id="margem" value="16" oninput="calcular()" class="w-full p-3 border-2 border-slate-100 rounded-xl font-bold">
                 </div>
             </div>
+        </section>
 
-            <div class="lg:col-span-2 p-8">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-sm font-black text-slate-800 uppercase">Escolha o Cenário para o Cliente</h2>
-                    <div id="indicador_comissao" class="px-4 py-2 rounded-full text-[11px] font-bold uppercase transition-all">
-                        Comissão: <span id="val_comissao">0,5%</span>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-4">
+                <div class="bg-slate-900 text-white p-6 rounded-3xl shadow-xl flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Resumo Venda Quebrada</p>
+                        <p id="resumo_vq" class="text-3xl font-black">R$ 0,00</p>
                     </div>
+                    <select id="parc_link" onchange="calcular()" class="bg-slate-800 text-sm border-none p-2 rounded-lg font-bold">
+                        <option value="0.0561">2x (Taxa 5,61%)</option>
+                        <option value="0.1325" selected>12x (Taxa 13,25%)</option>
+                    </select>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="border-2 border-slate-100 p-5 rounded-2xl hover:border-blue-400 transition-all bg-white shadow-sm">
-                        <p class="text-[10px] font-black text-blue-500 uppercase mb-3">1. Venda Quebrada</p>
-                        <p class="text-[9px] text-slate-400 mb-4 italic">Sistema (Parcelado) + Link (Com Juros)</p>
-                        <div class="space-y-2">
-                            <p class="text-xs">No Sistema: <b id="c1_sistema">R$ 0</b></p>
-                            <p class="text-xs">No Link (12x): <b id="c1_link" class="text-blue-600 text-sm">R$ 0</b></p>
-                            <hr>
-                            <p class="text-[10px] font-bold">Total: <span id="c1_total">R$ 0</span></p>
-                        </div>
-                    </div>
-
-                    <div class="border-2 border-green-100 p-5 rounded-2xl hover:border-green-400 transition-all bg-white shadow-sm">
-                        <p class="text-[10px] font-black text-green-600 uppercase mb-3">2. "À Vista" Parcelado</p>
-                        <p class="text-[9px] text-slate-400 mb-4 italic">Entrada PIX + Fornecedor Sem Juros</p>
-                        <div class="space-y-2">
-                            <p class="text-xs text-green-700 font-bold">Entrada PIX: <span id="c2_entrada">R$ 0</span></p>
-                            <p class="text-xs">No Sistema (10x): <b id="c2_sistema">R$ 0</b></p>
-                            <hr>
-                            <p class="text-[10px] font-bold">Total: <span id="c2_total">R$ 0</span></p>
-                        </div>
-                    </div>
-
-                    <div class="border-2 border-slate-100 p-5 rounded-2xl hover:border-slate-800 transition-all bg-white shadow-sm">
-                        <p class="text-[10px] font-black text-slate-900 uppercase mb-3">3. Total à Vista</p>
-                        <p class="text-[9px] text-slate-400 mb-4 italic">Pagamento Único via PIX/Transferência</p>
-                        <div class="space-y-2">
-                            <p class="text-2xl font-black text-slate-900" id="c3_vista">R$ 0,00</p>
-                            <p class="text-[9px] text-slate-400 uppercase font-bold">Sem descontos adicionais</p>
-                        </div>
-                    </div>
-                </div>
-
-                <button onclick="salvarNoFirebase()" class="w-full mt-8 bg-slate-900 text-white font-black py-4 rounded-2xl hover:scale-[1.02] transition-transform shadow-xl uppercase tracking-tighter">
-                    Confirmar e Salvar Venda
+                <button onclick="salvarVenda()" class="w-full bg-green-500 text-white font-black py-5 rounded-2xl shadow-lg hover:scale-[1.02] transition-transform uppercase">
+                    Salvar e Gerar Texto WhatsApp
                 </button>
             </div>
+
+            <div class="bg-blue-600 text-white p-6 rounded-3xl shadow-xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <p class="text-xs font-bold opacity-80 uppercase">Desempenho Miguel</p>
+                    <p class="text-4xl font-black my-2">R$ 1.245,30</p>
+                    <p class="text-[10px] font-medium bg-blue-500/50 p-2 rounded-lg inline-block">
+                        Margem Média: <span class="font-bold">16,5%</span>
+                    </p>
+                    <div class="mt-4 w-full bg-blue-800 h-2 rounded-full">
+                        <div class="bg-white w-[75%] h-full rounded-full"></div>
+                    </div>
+                    <p class="text-[9px] mt-2 opacity-70 italic text-center">Faltam 1,5% de margem para o bónus de 1%!</p>
+                </div>
+            </div>
         </div>
-    </div>
+
+    </main>
 
     <script>
-        // Configurações
-        const firebaseConfig = {
-            apiKey: "AIzaSyBDoUdfJeWgaKO8A0KqFzIQpRh2y7jn44Y",
-            authDomain: "sistema-orcamento-101.firebaseapp.com",
-            projectId: "sistema-orcamento-101",
-            storageBucket: "sistema-orcamento-101.firebasestorage.app",
-            messagingSenderId: "143981176901",
-            appId: "1:143981176901:web:77086f928f4e1c0f855b2c"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        const regras = {
-            pacote: { ideal: 16, min: 14.8 }, //
-            expedia: { ideal: 13, min: 12 },
-            seguro: { ideal: 40, min: 35 },
-            cruzeiro: { ideal: 15, min: 10 }
-        };
-
-        function aplicarRegra() {
-            const p = document.getElementById('produto').value;
-            document.getElementById('lucro_input').value = regras[p].ideal;
-            calcularTudo();
+        // A lógica de cálculo e Firebase será inserida aqui
+        function calcular() {
+            // Lógica para calcular os 3 cenários e a escada de comissão progressiva
         }
-
-        function calcularTudo() {
-            const custo = parseFloat(document.getElementById('custo').value) || 0;
-            const vSistema = parseFloat(document.getElementById('v_sistema').value) || 0;
-            const margem = parseFloat(document.getElementById('lucro_input').value) || 0;
-            
-            // Valor Base à Vista
-            const valorTotalVista = custo / (1 - (margem/100));
-            const lucroBruto = valorTotalVista - custo;
-
-            // CENÁRIO 1: V.Q. Link (Juros no Link)
-            const restanteLink = valorTotalVista - vSistema;
-            const valorComJurosLink = restanteLink / (1 - 0.1325); // 12x
-
-            // CENÁRIO 2: Entrada + Fornecedor
-            const entradaPix = valorTotalVista - vSistema;
-
-            // Lógica de Comissão Escalonada
-            let comTotal = 0.5;
-            if (margem >= 18) {
-                comTotal = 1.0; 
-                const pontosExtra = Math.floor(margem - 18);
-                comTotal += (pontosExtra * 0.1);
-            }
-
-            // Atualização da UI
-            document.getElementById('c3_vista').innerText = valorTotalVista.toLocaleString('pt-br',{style:'currency', currency:'BRL'});
-            document.getElementById('c1_sistema').innerText = vSistema.toLocaleString('pt-br',{style:'currency', currency:'BRL'});
-            document.getElementById('c1_link').innerText = valorComJurosLink.toLocaleString('pt-br',{style:'currency', currency:'BRL'});
-            document.getElementById('c1_total').innerText = (vSistema + valorComJurosLink).toLocaleString('pt-br',{style:'currency', currency:'BRL'});
-            
-            document.getElementById('c2_entrada').innerText = entradaPix.toLocaleString('pt-br',{style:'currency', currency:'BRL'});
-            document.getElementById('c2_sistema').innerText = vSistema.toLocaleString('pt-br',{style:'currency', currency:'BRL'});
-            document.getElementById('c2_total').innerText = valorTotalVista.toLocaleString('pt-br',{style:'currency', currency:'BRL'});
-
-            const ind = document.getElementById('indicador_comissao');
-            document.getElementById('val_comissao').innerText = comTotal.toFixed(1) + "%";
-            ind.className = margem >= 18 ? "px-4 py-2 rounded-full text-[11px] font-bold uppercase bg-green-500 text-white" : "px-4 py-2 rounded-full text-[11px] font-bold uppercase bg-slate-200 text-slate-600";
-        }
-
-        function salvarNoFirebase() {
-            const venda = {
-                produto: document.getElementById('produto').value,
-                margem: document.getElementById('lucro_input').value,
-                custo: document.getElementById('custo').value,
-                obs: document.getElementById('obs').value,
-                data: new Date().toISOString()
-            };
-            db.collection("vendas").add(venda).then(() => {
-                alert("Venda e Observações salvas com sucesso!");
-            });
-        }
-        aplicarRegra();
     </script>
 </body>
 </html>
